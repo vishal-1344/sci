@@ -1,0 +1,33 @@
+GitHub push instructions (PowerShell)
+
+Option A — using GitHub CLI (`gh`) (recommended):
+
+1. Create a new remote repo (interactive):
+   gh repo create <OWNER>/<REPO_NAME> --public --confirm
+
+2. Initialize, add and push `repo_ready/`:
+   cd repo_ready
+   git init
+   git add .
+   git commit -m "Initial release: SCI experiments and outputs"
+   git branch -M main
+   gh repo set-default <OWNER>/<REPO_NAME>
+   git remote add origin https://github.com/<OWNER>/<REPO_NAME>.git
+   git push -u origin main
+
+Option B — using GitHub web + Git (HTTPS):
+
+1. In GitHub web, create new repository `<OWNER>/<REPO_NAME>`.
+2. Locally:
+   cd repo_ready
+   git init
+   git add .
+   git commit -m "Initial release: SCI experiments and outputs"
+   git branch -M main
+   git remote add origin https://github.com/<OWNER>/<REPO_NAME>.git
+   git push -u origin main
+
+Notes & tips
+- If your repo contains large files (>50MB) or many data files, consider using Git LFS.
+- Replace `<OWNER>` and `<REPO_NAME>` with your GitHub account or organization and desired repo name.
+- If you prefer SSH, replace the https remote with `git@github.com:<OWNER>/<REPO_NAME>.git` and ensure SSH keys are configured.

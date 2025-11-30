@@ -1,0 +1,23 @@
+[
+    {
+        "acc_base": 0.8715,
+        "acc_sci": 0.879,
+        "mean_steps": 14.6775,
+        "err_reduction": 7.323214740265229,
+        "seed": 42
+    },
+    {
+        "acc_base": 0.8795,
+        "acc_sci": 0.885,
+        "mean_steps": 14.405,
+        "err_reduction": 6.982341868782045,
+        "seed": 100
+    },
+    {
+        "acc_base": 0.818,
+        "acc_sci": 0.8395,
+        "mean_steps": 15.8745,
+        "err_reduction": 3.616387450617109,
+        "seed": 2024
+    }
+]
