@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sci"
+version = "0.0.0"
+description = "Surgical Cognitive Interpreter (SCI) minimal prototype"
+authors = [ { name = "Vishal Joshua Meesala" } ]
+requires-python = ">=3.8"

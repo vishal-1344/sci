@@ -1,0 +1,4 @@
+dataset: bearings
+feature_dim: 128
+num_classes: 3
+num_markers: 8

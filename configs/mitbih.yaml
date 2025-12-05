@@ -1,0 +1,4 @@
+dataset: mitbih
+feature_dim: 128
+num_classes: 5
+num_markers: 8

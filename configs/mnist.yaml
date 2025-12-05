@@ -1,0 +1,4 @@
+dataset: mnist
+feature_dim: 128
+num_classes: 10
+num_markers: 8
