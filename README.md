@@ -156,5 +156,6 @@ git clone https://github.com/vishal-1344/sci.git
 cd sci
 pip install -e .
 
-Or Or install from requirements:
+Or install from requirements:
 pip install -r requirements.txt
+
