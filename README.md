@@ -1,7 +1,9 @@
 # SCI: Surgical Cognitive Interpreter  
 A Metacognitive Control Layer for Signal Dynamics
 
-This repository contains the reference implementation of the **Surgical Cognitive Interpreter (SCI)**, a closed-loop metacognitive controller that wraps existing models and turns prediction into a regulated process rather than a one-shot function evaluation.
+This repository contains the reference implementation of the **Surgical Cognitive Interpreter (SCI)**,  
+a closed-loop metacognitive controller that wraps existing models and turns prediction into a regulated  
+process rather than a one-shot function evaluation.
 
 SCI is introduced in:
 
@@ -10,52 +12,71 @@ SCI is introduced in:
 arXiv:2511.12240, 2025  
 https://arxiv.org/abs/2511.12240
 
-The paper formalizes interpretability as a feedback-regulated state: SCI monitors a scalar interpretive signal SP(t), defined over reliability-weighted, multi-scale features, and adaptively adjusts an interpreter’s parameters to reduce interpretive error
+The paper formalizes interpretability as a feedback-regulated state: SCI monitors a scalar interpretive 
+signal \( \mathrm{SP}(t) \), defined over reliability-weighted, multi-scale features, and adaptively adjusts 
+an interpreter’s parameters to reduce interpretive error
 
-> ΔSP(t) = SP\*(t) − SP(t)
+> \(\Delta \mathrm{SP}(t) = \mathrm{SP}^\*(t) - \mathrm{SP}(t)\)
 
 under Lyapunov-style stability constraints.
 
 ---
 
+## 0. What This Repository Provides
+
+This codebase provides:
+
+- A **modular implementation** of SCI’s metacognitive control loop.
+- Tools to construct reliability-weighted feature decompositions for time-series and other signals.
+- A controller that **monitors interpretive stability** and adapts parameters over time.
+- Experiment scripts and utilities to reproduce core empirical findings from the paper.
+
+SCI is designed to sit on top of existing models and signal pipelines; it does not replace them. It adds a  
+control-theoretic layer for inference-time regulation, safety, and interpretive stability.
+
+---
+
 ## 1. Motivation
 
-Most neural networks are deployed as **open-loop function approximators**: they map inputs to outputs in a single forward pass, with no explicit mechanism to regulate how much computation, explanation quality, or clarification is applied to a given case. In safety–critical domains (medicine, industrial monitoring, environmental sensing), this is brittle:
+Most neural networks are deployed as **open-loop function approximators**: they map inputs to outputs in a 
+single forward pass, with no explicit mechanism to regulate how much computation, explanation quality, or 
+clarification is applied to a given case. In safety–critical domains (medicine, industrial monitoring, 
+environmental sensing), this is brittle:
 
 - Easy and ambiguous inputs receive the same computational budget.  
 - Explanations are static, post hoc, and do not adapt under drift.  
-- There is no explicit notion of “interpretive error” that can be monitored and controlled.
+- There is no explicit notion of **interpretive error** that can be monitored and controlled.
 
 SCI addresses this by introducing a **closed-loop metacognitive layer** that:
 
-- Monitors a scalar interpretive state SP(t) ∈ [0, 1] over time.  
-- Computes interpretive error ΔSP = SP\* − SP relative to a target clarity level SP\*.  
-- Updates interpreter parameters Θ according to a Lyapunov-inspired rule with safeguards.  
+- Monitors a scalar interpretive state \( \mathrm{SP}(t) \in [0, 1] \) over time.  
+- Computes interpretive error \( \Delta \mathrm{SP} = \mathrm{SP}^\* - \mathrm{SP} \) relative to a target clarity level \( \mathrm{SP}^\* \).  
+- Updates interpreter parameters \( \Theta \) according to a Lyapunov-inspired rule with safeguards.  
 - Allocates more inference steps and adaptation to ambiguous or unstable inputs.  
-- Exposes ΔSP as a safety signal for abstention, escalation, or human-in-the-loop review.
+- Exposes \(\Delta \mathrm{SP}\) as a safety signal for abstention, escalation, or human-in-the-loop review.
 
 Empirically, SCI:
 
-- Allocates roughly 3.6–3.8× more computation to misclassified inputs than to correct ones.  
-- Produces a scalar safety signal ΔSP with AUROC ≈ 0.70–0.86 for detecting errors across vision, medical, and industrial benchmarks.
+- Allocates roughly **3.6–3.8× more computation** to misclassified inputs than to correct ones under matched budgets.  
+- Produces a scalar safety signal \(\Delta \mathrm{SP}\) with **AUROC ≈ 0.70–0.86** for detecting errors across vision, medical, and industrial benchmarks.
 
 ---
 
 ## 2. Conceptual Overview
 
-SCI is a modular architecture with the following core components.
+SCI is a modular architecture with four core components.
 
-### 2.1 Decomposition Π
+### 2.1. Decomposition \( \Pi \)
 
-A multi-scale, multimodal feature bank P(t, s) that organizes raw signals X(t) into interpretable blocks:
+A multi-scale, multimodal feature bank \( P(t, s) \) that organizes raw signals \( X(t) \) into interpretable blocks:
 
 - Rhythmic components (frequency bands, oscillatory structure)  
 - Trend components (low-frequency baselines, drifts)  
 - Spatial / structural components (sensor topology, modes)  
 - Cross-modal interactions (coherence, cross-correlation, causal couplings)  
-- Compact but auditable latent composites Π\*
+- Compact but auditable latent composites \( \Pi^\* \)
 
-Each feature is associated with a **reliability weight** w_f(t), derived from quantities such as:
+Each feature is associated with a **reliability weight** \( w_f(t) \), derived from quantities such as:
 
 - Signal-to-noise ratio (SNR)  
 - Temporal persistence  
@@ -63,92 +84,62 @@ Each feature is associated with a **reliability weight** w_f(t), derived from qu
 
 These weights allow SCI to emphasize trustworthy features and down-weight degraded sensors or spurious patterns.
 
-### 2.2 Interpreter ψΘ
+### 2.2. Interpreter \( \psi_\Theta \)
 
 A knowledge-guided interpreter that maps the reliability-weighted feature bank into:
 
-- **Markers** m_k: human-meaningful states or concepts  
-- **Confidences** p_k(t): calibrated probabilities  
-- **Rationales** r_k(t): sparse feature-level attributions and/or templated text
+- **Markers** \( m_k \): human-meaningful states or concepts  
+- **Confidences** \( p_k(t) \): calibrated probabilities  
+- **Rationales** \( r_k(t) \): sparse feature-level attributions and/or templated text
 
-The interpreter can be instantiated as a modest neural head (e.g., linear layer or shallow MLP) on top of P(t, s), optionally constrained by ontologies or domain rules.
+The interpreter can be instantiated as a modest neural head (e.g., linear layer or shallow MLP) on top of \( P(t, s) \), 
+optionally constrained by ontologies or domain rules.
 
-### 2.3 Surgical Precision (SP)
+### 2.3. Surgical Precision (SP)
 
-A scalar interpretive signal SP(t) ∈ [0, 1] that aggregates calibrated components such as:
+A scalar interpretive signal \( \mathrm{SP}(t) \in [0, 1] \) that aggregates calibrated components such as:
 
 - Clarity / selectivity  
 - Pattern strength  
 - Domain consistency  
-- Predictive alignment
+- Predictive alignment  
 
-In the minimal implementation, SP is instantiated as **normalized entropy** of a marker distribution or predictive distribution: high SP corresponds to focused, confident internal usage of markers; low SP indicates diffuse or ambiguous internal state.
+In the minimal implementation, SP is instantiated as **normalized entropy** of a marker or predictive distribution:  
+high SP corresponds to focused, confident internal usage of markers; low SP indicates diffuse or ambiguous internal state.
 
-### 2.4 Closed-Loop Controller
+### 2.4. Closed-Loop Controller
 
-A controller monitors ΔSP(t) and updates Θ accordingly. At a high level:
+A controller monitors \(\Delta \mathrm{SP}(t)\) and updates \( \Theta \) accordingly. At a high level:
 
-- Compute ΔSP(t) = SP\*(t) − SP(t) relative to a target SP\*(t).  
-- If |ΔSP(t)| exceeds a threshold, update parameters:
+1. Compute \(\Delta \mathrm{SP}(t) = \mathrm{SP}^\*(t) - \mathrm{SP}(t)\) relative to a target \( \mathrm{SP}^\*(t) \).  
+2. If \(|\Delta \mathrm{SP}(t)|\) exceeds a threshold, update parameters:
+   \[
+   \Theta_{t+1} = \mathrm{Proj}_\mathcal{C}\left[ \Theta_t + \eta_t \left( \Delta \mathrm{SP}(t) \cdot \nabla_\Theta \mathrm{SP}(t) + \lambda_h \cdot u_h(t) \right) \right]
+   \]
+   where:
+   - \( \eta_t \) is a step-size schedule,  
+   - \( \lambda_h \) is a human-gain budget,  
+   - \( u_h(t) \) is a bounded human feedback signal (optional),  
+   - \( \mathrm{Proj}_\mathcal{C} \) enforces constraints (trust region, sparsity, parameter bounds).
 
-  > Θ_{t+1} = Proj_C [ Θ_t + η_t ( ΔSP(t) · ∇_Θ SP(t) + λ_h · u_h(t) ) ]
+3. A Lyapunov-style analysis shows that, under suitable conditions on \( \eta_t \) and \( \lambda_h \), the “interpretive energy”  
+   \[
+   V(t) = \frac{1}{2} \big(\Delta \mathrm{SP}(t)\big)^2
+   \]
+   decreases monotonically up to bounded noise, so explanations become more stable and consistent over time.
 
-  where:
-  - η_t is a step-size schedule,  
-  - λ_h is a human-gain budget,  
-  - u_h(t) is a bounded human feedback signal (optional),  
-  - Proj_C enforces constraints (e.g., trust region, sparsity, or parameter bounds).
-
-- Lyapunov-style analysis shows that, under suitable conditions on η_t and λ_h, the “interpretive energy”  
-
-  > V(t) = ½ · (ΔSP(t))²  
-
-  decreases monotonically up to bounded noise, so explanations become more stable and consistent over time.
-
-This yields a **reactive interpretability layer** that not only explains but also stabilizes explanations under drift, feedback, and evolving conditions.
+This yields a **reactive interpretability layer** that not only explains but also stabilizes explanations under drift, feedback,  
+and evolving conditions.
 
 ---
 
-## 3. Repository Structure
+## 3. Installation
 
-The repository is organized as follows:
+Clone the repository and install in editable mode:
 
-```text
-sci/                  # Core library
-  __init__.py
-  controller.py       # SCIController: closed-loop update over Θ using ΔSP
-  interpreter.py      # Interpreter / marker head and SP computation
-  sp_evaluator.py     # SP and component metrics, calibration, logging
-  decomposition.py    # Decomposition Π and reliability-weighted feature bank
-  reliability.py      # Reliability scores (SNR, persistence, coherence)
-  utils.py            # Shared utilities and helper functions
-
-configs/              # Example configuration files
-  mnist.yaml
-  mitbih.yaml
-  bearings.yaml
-
-examples/             # Jupyter notebooks (to be populated)
-  mnist_sci_demo.ipynb
-  ecg_sci_demo.ipynb
-  bearings_sci_demo.ipynb
-
-experiments/          # Experiment scripts, logs, and analysis
-
-scripts/              # Training utilities, Hub utilities, etc.
-  push_to_hub.py
-
-run_sci_mitbih_fixed_k.py
-run_sci_bearings.py
-run_sci_signal_v2.py  # Signal-domain SCI experiments
-
-plot_metacognition_hero.py  # Plotting script for metacognitive behavior
-sc_arxiv.pdf          # Paper PDF (for convenience)
-sci_latex.tex         # LaTeX source of the paper
-
-pyproject.toml
-setup.cfg
-LICENSE
-README.md
-
-
+```bash
+git clone https://github.com/vishal-1344/sci.git
+cd sci
+pip install -e .
+# or:
+# pip install -r requirements.txt
