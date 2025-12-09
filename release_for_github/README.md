@@ -4,8 +4,6 @@ Release for GitHub
 This folder contains a curated set of scripts, experiment outputs, and paper sources prepared for uploading to GitHub.
 
 Contents
-- `sci_clean (3).tex` — paper source (LaTeX)
-- `sci (3).pdf` — compiled paper PDF
 - `run_sci_signal_v2.py` — MNIST SCI experiment (adaptive controller)
 - `run_sci_mitbih_fixed_k.py` — MIT‑BIH fixed-K baseline experiment
 - `run_sci_bearings.py` — Bearings SCI experiment
@@ -24,3 +22,4 @@ How to use
 
 Contact
 If you'd like me to initialize the git repo and push (requires your GitHub credentials or GH CLI setup), tell me and I will prepare the commands or attempt the push if you provide the necessary remote URL.
+
