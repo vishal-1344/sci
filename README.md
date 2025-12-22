@@ -1,7 +1,7 @@
 # SCI: Surgical Cognitive Interpreter  
 A Metacognitive Control Layer for Signal Dynamics
 
-This repository contains the reference implementation of the **Surgical Cognitive Interpreter (SCI)**,
+This repository contains the reference implementation of **SCI**,
 a closed-loop metacognitive controller that wraps existing models and turns prediction into a regulated
 process rather than a one-shot function evaluation.
 
@@ -158,4 +158,5 @@ pip install -e .
 
 Or install from requirements:
 pip install -r requirements.txt
+
 
