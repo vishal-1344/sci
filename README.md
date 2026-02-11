@@ -22,7 +22,7 @@ under Lyapunov-style stability constraints.
 
 ---
 
-## 0. What This Repository Provides
+## Overview
 
 This codebase provides:
 
@@ -158,5 +158,6 @@ pip install -e .
 
 Or install from requirements:
 pip install -r requirements.txt
+
 
 
